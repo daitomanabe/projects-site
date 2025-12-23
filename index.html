@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manabe Daito OS - Proposal</title>
+    <style>
+        :root {
+            /* Colors */
+            --canvas-bg: #000000;
+            --panel-bg: #000000;
+            --panel-text: #ffffff;
+            --panel-border: #333333;
+            --panel-control-bg: #111111;
+            --panel-control-bg-hover: #222222;
+
+            /* Accents & Utilities */
+            --grid-line: rgba(255, 255, 255, 0.12);
+            --text-muted: rgba(255, 255, 255, 0.6);
+            --text-faint: rgba(255, 255, 255, 0.3);
+
+            /* Typography Weights */
+            --fw-thin: 100;
+            --fw-light: 200;
+            --fw-regular: 300;
+            --fw-normal: 400;
+            --fw-bold: 500;
+
+            /* Layout */
+            --max-width: 1400px;
+            /* Wider for 2-col */
+            --section-spacing: 8rem;
+            --radius-sm: 4px;
+        }
+
+        body {
+            background-color: var(--canvas-bg);
+            color: var(--panel-text);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.8;
+            /* Relaxed reading */
+            scroll-behavior: smooth;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: min(8vw, 5rem);
+            font-weight: var(--fw-thin);
+            letter-spacing: 0em;
+            margin: 0 0 2rem 0;
+            line-height: 1.1;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            font-weight: var(--fw-thin);
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--panel-border);
+            padding-bottom: 1.5rem;
+            margin-bottom: 3rem;
+            margin-top: 6rem;
+            color: white;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            font-weight: var(--fw-light);
+            color: var(--panel-text);
+            margin-bottom: 1.5rem;
+            margin-top: 4rem;
+        }
+
+        h4 {
+            font-size: 1.1rem;
+            font-weight: var(--fw-bold);
+            color: var(--text-muted);
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        p {
+            font-weight: var(--fw-regular);
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            max-width: 800px;
+            font-size: 1.05rem;
+        }
+
+        strong {
+            color: var(--panel-text);
+            font-weight: var(--fw-bold);
+        }
+
+        ul {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            padding-left: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Layout Components */
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 4rem 3rem;
+        }
+
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 2rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            mix-blend-mode: difference;
+            z-index: 1000;
+            box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--panel-border);
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-weight: var(--fw-bold);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-left: 2rem;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .nav-link:hover {
+            opacity: 1;
+        }
+
+        .nav-link:first-child {
+            margin-left: 0;
+        }
+
+        /* 2-Column Layout for Proposal */
+        .proposal-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 6rem;
+            margin-top: 4rem;
+        }
+
+        /* Sticky Sidebar */
+        .toc-sidebar {
+            position: sticky;
+            top: 8rem;
+            height: fit-content;
+            border-right: 1px solid var(--panel-border);
+            padding-right: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .proposal-layout {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .toc-sidebar {
+                position: static;
+                border-right: none;
+                border-bottom: 1px solid var(--panel-border);
+                padding-bottom: 2rem;
+                margin-bottom: 4rem;
+            }
+        }
+
+        .toc-link {
+            display: block;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 0.5rem 0;
+            transition: color 0.2s;
+            border-left: 2px solid transparent;
+            padding-left: 1rem;
+            margin-left: -1rem;
+        }
+
+        .toc-link:hover {
+            color: var(--panel-text);
+            border-left-color: var(--panel-border);
+        }
+
+        .toc-link.active {
+            color: var(--panel-text);
+            border-left-color: var(--panel-text);
+            font-weight: var(--fw-bold);
+        }
+
+        /* Styling for the Details Section Cards */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 2rem;
+            border: 1px solid var(--panel-border);
+            transition: transform 0.3s, background 0.3s, border-color 0.3s;
+            display: flex;
+            flex-direction: column;
+            min-height: 200px;
+        }
+
+        .card:hover {
+            background: var(--panel-control-bg);
+            border-color: var(--panel-text);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 2rem;
+            background: transparent;
+            color: var(--panel-text);
+            border: 1px solid var(--panel-text);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 2rem;
+            font-size: 0.8rem;
+        }
+
+        .btn:hover {
+            background: var(--panel-text);
+            color: black;
+        }
+
+        .intro-text {
+            border-left: 1px solid var(--panel-text);
+            padding-left: 2rem;
+            font-size: 1.1rem;
+            line-height: 2;
+            margin-left: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="nav-bar">
+        <div>
+            <a href="#proposal" class="nav-link">
+                <span class="lang-en">Proposal</span>
+                <span class="lang-jp" style="display: none;">企画書</span>
+            </a>
+
+            <a href="https://github.com/daitomanabe/projects-site" target="_blank" class="nav-link">GitHub</a>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <a href="#" class="nav-link" id="lang-toggle" style="cursor: pointer;">EN / JP</a>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <header style="margin-top: 8rem; margin-bottom: 8rem;">
+            <h1>
+                <span class="lang-en">Manabe Daito OS<br>Grant Proposal</span>
+                <span class="lang-jp" style="display: none;">作家思考アーカイブ<br>基盤構築事業</span>
+            </h1>
+            <div class="intro-text">
+                <span class="lang-en">
+                    Full Text of the Grant Proposal / Final Version<br>
+                    Project to build a sustainable cultural infrastructure by archiving the artist's creative process.
+                </span>
+                <span class="lang-jp" style="display: none;">
+                    助成金申請用 企画書全文 / 完全版<br>
+                    作家の創造的プロセスをアーカイブし、持続可能な文化基盤を構築するプロジェクト。
+                </span>
+            </div>
+        </header>
+
+        <!-- 2 Column Layout -->
+        <div class="proposal-layout">
+
+            <!-- Sidebar TOC -->
+            <aside class="toc-sidebar">
+                <nav>
+                    <a href="#section-1" class="toc-link">
+                        <span class="lang-en">1. Overview</span>
+                        <span class="lang-jp" style="display: none;">1. 事業概要</span>
+                    </a>
+                    <a href="#section-2" class="toc-link">
+                        <span class="lang-en">2. Significance of Archive</span>
+                        <span class="lang-jp" style="display: none;">2. 一次資料の意義</span>
+                    </a>
+                    <a href="#section-3" class="toc-link">
+                        <span class="lang-en">3. Living Artist Context</span>
+                        <span class="lang-jp" style="display: none;">3. 現存作家の意義</span>
+                    </a>
+                    <a href="#section-4" class="toc-link">
+                        <span class="lang-en">4. Optimization & Development</span>
+                        <span class="lang-jp" style="display: none;">4. 制作の最適化と発展</span>
+                    </a>
+                    <a href="#section-5" class="toc-link">
+                        <span class="lang-en">5. Social Significance</span>
+                        <span class="lang-jp" style="display: none;">5. 社会的意義</span>
+                    </a>
+                    <a href="#section-6" class="toc-link">
+                        <span class="lang-en">6. Why Daito Manabe?</span>
+                        <span class="lang-jp" style="display: none;">6. 本事業の独自性</span>
+                    </a>
+                    <a href="#section-7" class="toc-link">
+                        <span class="lang-en">7. Outputs & Policy</span>
+                        <span class="lang-jp" style="display: none;">7. 成果物と公開方針</span>
+                    </a>
+                    <a href="#section-13" class="toc-link">
+                        <span class="lang-en">13. Conclusion</span>
+                        <span class="lang-jp" style="display: none;">13. 結論</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main>
+                <section id="section-1">
+                    <h2>
+                        <span class="lang-en">1. Project Overview</span>
+                        <span class="lang-jp" style="display: none;">1. 事業概要</span>
+                    </h2>
+                    <p>
+                        <span class="lang-en">
+                            This project aims to systematically organize and structure the <strong>creative activities
+                                of media artist Daito Manabe from 2004 to 2025</strong>. It reconstructs not only the
+                            artworks and projects but also the <strong>source code, design documents, and creative
+                                documentation (primary sources)</strong> into a <strong>continuously updated "Artist OS"
+                                (Operating System)</strong>.
+                        </span>
+                        <span class="lang-jp" style="display: none;">
+                            本事業は、メディアアーティスト・真鍋大度の**2004年から2025年に至る制作活動**を対象に、作品・プロジェクト・研究・実験のみならず、実際に用いられた**ソースコード、設計資料、制作ドキュメントを含む一次資料群**を体系的に整理・構造化し、**継続的に更新・蓄積される作家OS（Operating
+                            System）として再構築する**ことを目的とする。
+                        </span>
+                    </p>
+                    <p>
+                        <span class="lang-en">
+                            Since Daito Manabe is an active artist continuing to produce work at the forefront, this OS
+                            will function not merely as a preservation of the past, but as a <strong>"living cultural
+                                infrastructure" that continues to be updated for the present and future</strong>.
+                        </span>
+                        <span class="lang-jp" style="display: none;">
+                            真鍋大度は現存し、現在も第一線で制作を続ける作家であるため、本OSは**過去の保存に留まらず、現在および未来に向けて更新され続ける“生きた文化基盤”**として機能する。
+                        </span>
+                    </p>
+                </section>
+
+                <section id="section-2">
+                    <h2>
+                        <span class="lang-en">2. Significance of Primary Sources</span>
+                        <span class="lang-jp" style="display: none;">2. 制作資料・一次ソースが残っていることの意義</span>
+                    </h2>
+
+                    <h3>
+                        <span class="lang-en">2.1 Extremely Rare Continuity of Materials</span>
+                        <span class="lang-jp" style="display: none;">2.1 極めて稀有な制作資料の連続性</span>
+                    </h3>
+                    <p>
+                        <span class="lang-en">One major feature of this project is that the following materials have
+                            been <strong>systematically preserved over a long period</strong>:</span>
+                        <span class="lang-jp"
+                            style="display: none;">本事業の大きな特徴の一つは、以下の資料が**長期間にわたり体系的に残されている**点である。</span>
+                    </p>
+                    <ul>
+                        <li>
+                            <span class="lang-en">Primary sources regarding projects since 2004</span>
+                            <span class="lang-jp" style="display: none;">2004年以降の作品・プロジェクトに関する一次資料</span>
+                        </li>
+                        <li>
+                            <span class="lang-en">Source Code</span>
+                            <span class="lang-jp" style="display: none;">ソースコード</span>
+                        </li>
+                        <li>
+                            <span class="lang-en">Technical Design Documents (Architecture, Specs, Schematics)</span>
+                            <span class="lang-jp" style="display: none;">技術設計資料（アーキテクチャ、仕様、回路・センサー構成等）</span>
+                        </li>
+                        <li>
+                            <span class="lang-en">Experiment Logs (Tests, Validations, Prototyping)</span>
+                            <span class="lang-jp" style="display: none;">実験ログ（テスト、検証、プロトタイピング過程）</span>
+                        </li>
+                    </ul>
+
+                    <h3>
+                        <span class="lang-en">2.2 Archiving "Implemented Thinking" Not Just Works</span>
+                        <span class="lang-jp" style="display: none;">2.2 完成作品ではなく「実装された思考」を残す</span>
+                    </h3>
+                    <p>
+                        <span class="lang-en">
+                            With finished works alone, critical information such as "what technical trials were made,"
+                            "why specific algorithms were chosen," and "what ideas were unimplemented" is lost.
+                            Manabe Daito OS records and sorts this by including <strong>actual code and design
+                                documents</strong>, making it possible to trace how thought was converted into
+                            implementation.
+                        </span>
+                        <span class="lang-jp" style="display: none;">
+                            完成作品のみでは、どのような技術的試行錯誤があったのか、なぜその構成・アルゴリズムが選ばれたのか、といった情報は失われる。
+                            Manabe Daito OSでは、**実際に書かれたコードや設計資料を含めて記録・整理**することで、思考がどのように実装へと変換されたかを追跡可能にする。
+                        </span>
+                    </p>
+                </section>
+
+                <section id="section-3">
+                    <h2>
+                        <span class="lang-en">3. Significance as an Active Artist</span>
+                        <span class="lang-jp" style="display: none;">3. 現存・現在進行形の作家であることの意義</span>
+                    </h2>
+                    <p>
+                        <span class="lang-en">
+                            Unlike traditional archives that assume a retrospective organization after an artist's
+                            career, this project assumes that <strong>new works, experiments, and judgments are
+                                continuously being born</strong>.
+                            Therefore, Manabe Daito OS is designed not as a device to preserve the past, but as a
+                            <strong>foundation to update the present and generate the future</strong>.
+                        </span>
+                        <span class="lang-jp" style="display: none;">
+                            多くのアーカイブ事業は回顧的整理を前提としているが、本事業では**新たな作品・実験・判断が継続的に生まれている**ことを前提とする。
+                            そのためManabe Daito OSは、過去を保存する装置ではなく**現在を更新し、未来を生成するための基盤**として設計される。
+                        </span>
+                    </p>
+                </section>
+
+                <section id="section-4">
+                    <h2>
+                        <span class="lang-en">4. Optimization & Development</span>
+                        <span class="lang-jp" style="display: none;">4. OS化による制作活動の最適化と発展</span>
+                    </h2>
+                    <p>
+                        <span class="lang-en">
+                            The OS functions as a <strong>creative support environment for the artist himself</strong>.
+                            By allowing immediate reference to past judgments, comparison of constraints, and
+                            objectification of technical habits, the creative activity itself is optimized.
+                            Furthermore, it serves as an <strong>exploratory device that induces future
+                                creation</strong> by visualizing connections between works that were not previously
+                            linked.
+                        </span>
+                        <span class="lang-jp" style="display: none;">
+                            Manabe Daito OSは、**作家本人にとっての制作支援環境**としても機能する。過去の判断や試行錯誤を即座に参照し、制作活動そのものを最適化する。
+                            また、過去には接続されていなかった作品間の関係を可視化することで、**未来の創作を誘発する探索装置**となる。
+                        </span>
+                    </p>
+                </section>
+
+                <section id="section-5">
+                    <h2>
+                        <span class="lang-en">5. Social Significance</span>
+                        <span class="lang-jp" style="display: none;">5. 社会的・公共的意義</span>
+                    </h2>
+                    <p>
+                        <span class="lang-en">
+                            Manabe Daito OS presents a next-generation cultural inheritance model: shifting from
+                            <strong>"Preserving Works"</strong> to <strong>"Preserving the Process of Thought and
+                                Implementation"</strong>. This serves as a versatile model case applicable to other
+                            artists, researchers, and cultural institutions.
+                        </span>
+                        <span class="lang-jp" style="display: none;">
+                            Manabe Daito
+                            OSは、**「作品を残す」から「思考と実装のプロセスを残す」**という、次世代の文化継承モデルを提示する。これは、他の作家・研究者・文化機関へも展開可能な**汎用的モデルケース**となる。
+                        </span>
+                    </p>
+                </section>
+
+                <section id="section-6">
+                    <h2>
+                        <span class="lang-en">6. Why Daito Manabe? (Differentiation)</span>
+                        <span class="lang-jp" style="display: none;">6. 本事業が他の作家・事例では代替できない理由</span>
+                    </h2>
+
+                    <h4>
+                        <span class="lang-en">6.1 Cross-disciplinary consistency over 20 years</span>
+                        <span class="lang-jp" style="display: none;">6.1 表現・技術・研究を20年以上横断し続けている</span>
+                    </h4>
+                    <p>
+                        <span class="lang-en">
+                            A rare case where a single individual has consistently crossed multiple domains—music,
+                            imagery, performance, installation, research, AI, and software implementation—since 2004.
+                            The continuity of thought and judgment is preserved within a single subject, which is
+                            essential for structuring the "History of Thought" into an OS.
+                        </span>
+                        <span class="lang-jp" style="display: none;">
+                            音楽・映像・パフォーマンス・インスタレーション・研究・AI・ソフトウェア実装といった複数領域を、2004年以降一貫して同一の作家が横断し続けている極めて稀有な事例。
+                            「思考の履歴」をOSとして構造化する上で、思考と判断の連続性が同一主体にあることは決定的な前提条件である。
+                        </span>
+                    </p>
+
+                    <h4>
+                        <span class="lang-en">6.2 Existence of Source Code & Design Docs</span>
+                        <span class="lang-jp" style="display: none;">6.2 ソースコード・設計資料が長期間残存している</span>
+                    </h4>
+                    <p>
+                        <span class="lang-en">
+                            It is common in media art for works to remain while implementation code is lost. In Daito
+                            Manabe's case, actual running code, traces of technical trial and error, and records of
+                            unimplemented ideas remain, allowing verification of how thought was translated into
+                            technology.
+                        </span>
+                        <span class="lang-jp" style="display: none;">
+                            メディアアート分野において、作品は残っていても実装コードや設計思想が失われている事例は少なくない。
+                            真鍋大度の場合、実際に動作したコードや技術的試行錯誤の痕跡が残されており、思考がどのように技術へ変換されたかを検証可能である。
+                        </span>
+                    </p>
+                </section>
+
+                <section id="section-7">
+                    <h2>
+                        <span class="lang-en">7. Outputs & Policy</span>
+                        <span class="lang-jp" style="display: none;">7. 成果物と公開方針</span>
+                    </h2>
+                    <ul>
+                        <li>
+                            <span class="lang-en"><strong>Normalized Database:</strong> Metadata, tech elements,
+                                conditions.</span>
+                            <span class="lang-jp"
+                                style="display: none;"><strong>正規化データベース</strong>（作品メタデータ／技術要素／制作条件）</span>
+                        </li>
+                        <li>
+                            <span class="lang-en"><strong>Primary Source Archive:</strong> Indexing of source code,
+                                design docs, logs.</span>
+                            <span class="lang-jp"
+                                style="display: none;"><strong>制作一次資料アーカイブ</strong>（ソースコード、設計資料、実験ログ等の整理・索引化）</span>
+                        </li>
+                        <li>
+                            <span class="lang-en"><strong>Search/Compare Interface:</strong> For education, research,
+                                and curation.</span>
+                            <span class="lang-jp"
+                                style="display: none;"><strong>検索・探索・比較インターフェース</strong>（教育／研究／企画用）</span>
+                        </li>
+                    </ul>
+                </section>
+
+                <section id="section-13">
+                    <h2>
+                        <span class="lang-en">13. Conclusion</span>
+                        <span class="lang-jp" style="display: none;">13. 結論</span>
+                    </h2>
+                    <p style="font-size: 1.2rem; border-left: 2px solid var(--panel-text); padding-left: 2rem;">
+                        <span class="lang-en">
+                            Manabe Daito OS is a <strong>cultural operating system incorporating a time axis</strong>,
+                            integrating over 20 years of past materials, ongoing creative activities, and future
+                            exploration into a single structure. It is a new attempt to implement cultural resources as
+                            "living knowledge" in society without dividing archiving, education, research, and creation.
+                        </span>
+                        <span class="lang-jp" style="display: none;">
+                            Manabe Daito
+                            OSは、過去20年以上にわたる制作資料と、現在進行形の創作活動と、未来に向けた探索と生成を一つの構造に統合する、**時間軸を内包した文化的オペレーティングシステム**である。
+                            本事業は、アーカイブ・教育・研究・創作を分断せず、文化資源を「生きた知」として社会に実装する新たな試みである。
+                        </span>
+                    </p>
+                </section>
+
+            </main>
+        </div>
+
+
+
+        <footer style="margin-top: 8rem; text-align: center; opacity: 0.5; font-size: 0.8rem;">
+            <p>
+                <span class="lang-en">Generated by Daito's Personal AI Agent</span>
+                <span class="lang-jp" style="display: none;">Generated by Daito's Personal AI Agent</span>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        const toggleBtn = document.getElementById('lang-toggle');
+        let currentLang = 'jp'; // Default to Japanese as requested by "Main Proposal" context
+
+        // Initialize state
+        updateLanguage();
+
+        toggleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            currentLang = currentLang === 'en' ? 'jp' : 'en';
+            updateLanguage();
+        });
+
+        function updateLanguage() {
+            const enElements = document.querySelectorAll('.lang-en');
+            const jpElements = document.querySelectorAll('.lang-jp');
+
+            if (currentLang === 'en') {
+                enElements.forEach(el => el.style.display = '');
+                jpElements.forEach(el => el.style.display = 'none');
+                toggleBtn.textContent = 'EN / JP';
+            } else {
+                enElements.forEach(el => el.style.display = 'none');
+                jpElements.forEach(el => el.style.display = '');
+                toggleBtn.textContent = 'JP / EN';
+            }
+
+            // Highlight Table of Contents for scroll spy could go here
+        }
+    </script>
+</body>
+
+</html>
